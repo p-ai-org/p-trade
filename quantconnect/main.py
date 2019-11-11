@@ -1,22 +1,23 @@
-# can uncomment these when running in qc
-#from CboeVixAlphaModel import CboeVixAlphaModel
-#from Alphas.RsiAlphaModel import RsiAlphaModel
-#from Execution.VolumeWeightedAveragePriceExecutionModel import VolumeWeightedAveragePriceExecutionModel
-#from SmallCapGrowthStocks import SmallCapGrowthStocks
+from CboeVixAlphaModel import CboeVixAlphaModel
+from Alphas.RsiAlphaModel import RsiAlphaModel
+from Execution.VolumeWeightedAveragePriceExecutionModel import VolumeWeightedAveragePriceExecutionModel
+from SmallCapGrowthStocks import SmallCapGrowthStocks
+from exampleAlpha import ExampleAlphaModel as ExampleAlpha
 
-class ModulatedResistanceRegulators(QCAlgorithm):
+class MainAlgorithm(QCAlgorithm):
 
     def Initialize(self):
-        self.SetStartDate(2019, 4, 17)  # Set Start Date
-        self.SetCash(100000)  # Set Strategy Cash
-        self.AddEquity("SPY", Resolution.Hour)
+        self.SetStartDate(2019, 8, 17)  # Set Start Date
+        #self.SetBenchmark("SPY")
 
-        #self.AddAlpha(CboeVixAlphaModel(self))
-        #self.AddAlpha(RsiAlphaModel(60, Resolution.Minute))
-        #self.SetExecution(VolumeWeightedAveragePriceExecutionModel())
-        #self.SetPortfolioConstruction(InsightWeightingPortfolioConstructionModel())
-        #self.SetRiskManagement(MaximumDrawdownPercentPortfolio(0.03))
-        #self.SetUniverseSelection(SmallCapGrowthStocks())
+        spy = Symbol.Create("SPY", SecurityType.Equity, Market.USA)
+        fb = Symbol.Create("FB", SecurityType.Equity, Market.USA)
+        self.SetUniverseSelection(ManualUniverseSelectionModel([spy, fb]))
+        self.SetAlpha(ExampleAlpha())
+
+        #self.SetPortfolioConstruction(EqualWeightingPortfolioConstructionModel())
+        #self.SetExecution(ImmediateExecutionModel())
+
 
     def OnData(self, data):
         '''OnData event is the primary entry point for your algorithm. Each new data point will be pumped in here.
