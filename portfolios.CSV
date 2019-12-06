@@ -1,15 +1,4 @@
-This file was created by CMPT_ME_RETS using the 201910 CRSP database.  It contains
-value- and equal-weighted returns for size portfolios.  Each record contains returns for:
 
-Negative (not used)  30%  40%  30%     5 Quintiles    10 Deciles
-
-The portfolios are constructed at the end of Jun.  The annual returns are from January
-to December.
-
-Missing data are indicated by -99.99 or -999.
-
-
-  Value Weight Returns -- Monthly
 ,<= 0,Lo 30,Med 40,Hi 30,Lo 20,Qnt 2,Qnt 3,Qnt 4,Hi 20,Lo 10,Dec 2,Dec 3,Dec 4,Dec 5,Dec 6,Dec 7,Dec 8,Dec 9,Hi 10
 192607,  -99.99,    0.14,    1.59,    3.42,    0.37,    0.78,    1.68,    1.39,    3.67,   -0.12,    0.52,   -0.05,    1.31,    1.21,    2.04,    1.58,    1.29,    3.53,    3.71
 192608,  -99.99,    3.21,    2.77,    2.91,    2.26,    3.51,    3.75,    1.53,    3.07,    1.33,    2.55,    4.00,    3.20,    2.81,    4.45,    1.61,    1.49,    0.61,    3.79
