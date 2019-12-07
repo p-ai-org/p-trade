@@ -2,9 +2,11 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
+df = pd.read_excel(r'../bql.xlsx')
+print(df.head())
+
 
 class BetaAlgorithm(QCAlgorithm):
-
 
     def __init__(self):
         self.tickers = ["MMM", "AXP", "AAPL", "BA", "CAT", "CVX", "CSCO","KO",
