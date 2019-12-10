@@ -1,53 +1,36 @@
-# QUANTCONNECT.COM - Democratizing Finance, Empowering Individuals.
-# Lean Algorithmic Trading Engine v2.0. Copyright 2014 QuantConnect Corporation.
-# 
-# Licensed under the Apache License, Version 2.0 (the "License"); 
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-# 
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-import clr
-clr.AddReference("System")
-clr.AddReference("QuantConnect.Algorithm")
-clr.AddReference("QuantConnect.Common")
-
-from System import *
-from QuantConnect import *
-from QuantConnect.Algorithm import *
-
 import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense, Activation
 from keras.optimizers import SGD
 
-class KerasNeuralNetworkAlgorithm(QCAlgorithm):
+class SimpleNeuralNetworkAlgorithm(QCAlgorithm):
 
     def Initialize(self):
-        self.SetStartDate(2013, 10, 7)  # Set Start Date
-        self.SetEndDate(2013, 10, 8) # Set End Date
+        self.SetStartDate(2018, 1, 20)
+        self.SetEndDate(2018, 6, 20)
         
-        self.SetCash(100000)  # Set Strategy Cash
-        spy = self.AddEquity("SPY", Resolution.Minute)
-        self.symbols = [spy.Symbol] # This way can be easily extended to multiply symbols
+        self.SetCash(100000)
+        self.symbols = []
         
-        self.lookback = 30 # day of lookback for historical data
+        # symbols to track
+        self.tickers = ["MMM", "AXP", "AAPL"]
+        for ticker in self.tickers:                                 
+            equity = self.AddEquity(ticker, Resolution.Daily)
+            self.symbols.append(equity.Symbol)
+        
+        self.lookback = 30 # number of lookback days for historical data
 
-        # train Neural Network every Monday 28 minutes after market open
+        # train Neural Network every Monday 1 minute after market open
         self.Schedule.On(
             self.DateRules.Every(DayOfWeek.Monday),
-            self.TimeRules.AfterMarketOpen("SPY", 28),
+            self.TimeRules.AfterMarketOpen("MMM", 1),
             self.NetTrain
         )
 
-        # trade every monday 30 minutes after open
+        # trade every monday 5 minutes after open
         self.Schedule.On(
             self.DateRules.Every(DayOfWeek.Monday), 
-            self.TimeRules.AfterMarketOpen("SPY", 30), 
+            self.TimeRules.AfterMarketOpen("MMM", 5), 
             self.Trade
         ) 
         
@@ -78,20 +61,24 @@ class KerasNeuralNetworkAlgorithm(QCAlgorithm):
                 # build a neural network from the 1st layer to the last layer
                 model = Sequential()
 
-                # add first dense layer with 10 nodes and ReLU activation function
-                model.add(Dense(10, activation='relu', input_dim = 1))
+                # add first dense layer with 16 nodes and ReLU activation function
+                model.add(Dense(16, activation='relu', input_dim=1))
+
+                # add second dense layer
+                model.add(Dense(16, activation='relu'))
 
                 # add final dense layer with one node
                 model.add(Dense(1))
-
-                # optimizer is stochastic gradient descent with learning rate = 0.01
-                sgd = SGD(lr = 0.01)
                 
-                # choose loss function as mean-squared error and set model optimizer
-                model.compile(loss='mse', optimizer=sgd)
+                # choose loss function as mean-squared error
+                # and optimizer as Adam
+                model.compile(
+                    optimizer='adam',
+                    loss='mse'
+                )
 
                 # pick an iteration number large enough for convergence 
-                num_epochs = 500
+                num_epochs = 300
                 
                 # train the model on all the data
                 # this is typically not how it is done in practice
@@ -106,7 +93,6 @@ class KerasNeuralNetworkAlgorithm(QCAlgorithm):
             # get the final predicted price 
             y_pred_final = model.predict(y_data)[0][-1]
             
-            # Follow the trend
             self.buy_prices[symbol] = y_pred_final + np.std(y_data)
             self.sell_prices[symbol] = y_pred_final - np.std(y_data)
         
@@ -114,15 +100,11 @@ class KerasNeuralNetworkAlgorithm(QCAlgorithm):
         ''' 
         Enter or exit positions based on relationship of the open price of the current bar 
         and the prices defined by the neural network model.
-        Liquidate if the open price is below the sell price and buy if the open price is above the buy price 
+        Liquidate if the open price is above the sell price and buy if the open price is below the buy price 
         ''' 
         for holding in self.Portfolio.Values:
-            if self.CurrentSlice[holding.Symbol].Open < self.sell_prices[holding.Symbol] and holding.Invested:
+            if self.CurrentSlice[holding.Symbol].Open > self.sell_prices[holding.Symbol] and holding.Invested:
                 self.Liquidate(holding.Symbol)
             
-            if self.CurrentSlice[holding.Symbol].Open > self.buy_prices[holding.Symbol] and not holding.Invested:
+            if self.CurrentSlice[holding.Symbol].Open < self.buy_prices[holding.Symbol] and not holding.Invested:
                 self.SetHoldings(holding.Symbol, 1 / len(self.symbols))
-
-
-
-
