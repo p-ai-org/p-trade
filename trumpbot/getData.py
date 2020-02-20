@@ -9,14 +9,19 @@ CONSUMER_KEY    = keys[0]
 CONSUMER_SECRET = keys[1]
 ACCESS_TOKEN  = keys[2]
 ACCESS_SECRET = keys[3]
-
 def connect_to_twitter_OAuth():
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     auth.set_access_token(ACCESS_TOKEN, ACCESS_SECRET)
     api = tweepy.API(auth)
     return api
+api = connect_to_twitter_OAuth()
 
-api = connect_to_twitter_OAuth() '''
+f = open('./tokens.txt', 'r')
+keys = f.read().split('\n')
+secret = keys[6]
+public = keys[7]
+auth =
+'''
 
 import matplotlib.pyplot as plt
 def getData():
